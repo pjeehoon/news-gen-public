@@ -10,7 +10,7 @@
     <article>
         <h3><a href="articles/{{ article.id }}.html">{{ article.title }}</a></h3>
         <p class="meta">
-            {{ article.generated_at[:10] }} | 
+            {{ article.generated_at[:16].replace('T', ' ') }} KST | 
             주제: {{ article.topic }} | 
             취재 깊이: {{ article.investigation_depth }}
         </p>

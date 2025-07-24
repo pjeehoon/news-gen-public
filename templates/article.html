@@ -6,7 +6,7 @@
 <article class="full-article">
     <h2>{{ article.title }}</h2>
     <p class="meta">
-        {{ article.generated_at[:10] }} | 
+        {{ article.generated_at[:16].replace('T', ' ') }} KST | 
         주제: {{ article.topic }} | 
         취재 유형: {{ article.investigation_type }}
     </p>

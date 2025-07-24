@@ -18,7 +18,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from scripts.utils import setup_logging
+from scripts.utils import setup_logging, get_kst_now
 
 logger = setup_logging("render_html")
 
@@ -48,7 +48,7 @@ def load_articles_from_investigations(investigations_dir="integrated_results"):
                 
                 # 날짜 포맷 조정
                 if 'generated_at' not in article_data:
-                    article_data['generated_at'] = investigation.get('timestamp', datetime.now().isoformat())
+                    article_data['generated_at'] = investigation.get('timestamp', get_kst_now().isoformat())
                 
                 articles.append(article_data)
                 

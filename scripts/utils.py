@@ -16,7 +16,7 @@ import logging
 from typing import Optional, Dict, Any
 from pathlib import Path
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 # Load environment variables
 load_dotenv()
@@ -48,6 +48,59 @@ def setup_logging(name: str = "kona") -> logging.Logger:
     )
 
     return logging.getLogger(name)
+
+
+# Korean Standard Time (KST) timezone
+KST = timezone(timedelta(hours=9))
+
+
+def get_kst_now():
+    """Get current time in KST timezone"""
+    return datetime.now(KST)
+
+
+def format_kst_time(dt: datetime, format_str: str = "%Y년 %m월 %d일 %H:%M") -> str:
+    """
+    Format datetime to KST string
+    
+    Args:
+        dt: datetime object (can be UTC or naive)
+        format_str: strftime format string
+        
+    Returns:
+        Formatted KST time string
+    """
+    # If datetime is naive, assume it's already KST
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=KST)
+    # If datetime has timezone info, convert to KST
+    else:
+        dt = dt.astimezone(KST)
+    
+    return dt.strftime(format_str)
+
+
+def parse_iso_to_kst(iso_string: str) -> datetime:
+    """
+    Parse ISO format string and convert to KST
+    
+    Args:
+        iso_string: ISO format datetime string
+        
+    Returns:
+        datetime object in KST timezone
+    """
+    # Handle 'Z' suffix for UTC
+    if iso_string.endswith('Z'):
+        iso_string = iso_string[:-1] + '+00:00'
+    
+    dt = datetime.fromisoformat(iso_string)
+    
+    # If no timezone info, assume UTC
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    
+    return dt.astimezone(KST)
 
 
 class APIKeyManager:

@@ -18,6 +18,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 from bs4 import BeautifulSoup
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from scripts.utils import parse_iso_to_kst, format_kst_time
 
 def extract_article_info_from_html(html_path):
     """HTML 파일에서 기사 정보 추출"""
@@ -272,10 +275,21 @@ def generate_unified_index():
                     except Exception as e:
                         print(f"Warning: Could not extract summary from HTML for {latest_id}: {e}")
                 
+                # KST 시간으로 변환
+                time_str = '시간 정보 없음'
+                if latest_info.get('last_updated') or latest_info.get('created_at'):
+                    iso_time = latest_info.get('last_updated', latest_info.get('created_at', ''))
+                    try:
+                        dt = parse_iso_to_kst(iso_time)
+                        time_str = format_kst_time(dt)
+                    except:
+                        # Fallback to original format if parsing fails
+                        time_str = datetime.fromisoformat(iso_time).strftime("%Y년 %m월 %d일 %H:%M")
+                
                 article_info = {
                     'filename': f"article_{latest_id}.html",
                     'title': latest_info.get('generated_title') or latest_info.get('main_title', '제목 없음'),
-                    'time': datetime.fromisoformat(latest_info.get('last_updated', latest_info.get('created_at', ''))).strftime("%Y년 %m월 %d일 %H:%M") if latest_info.get('last_updated') or latest_info.get('created_at') else '시간 정보 없음',
+                    'time': time_str,
                     'summary': summary,
                     'source': 'topic_index',
                     'path': None,  # 경로는 나중에 찾기

@@ -33,7 +33,7 @@ from scripts.article_version_manager import ArticleVersionManager
 from scripts.realtime_trend_analyzer import RealtimeTrendAnalyzer
 from scripts.multi_article_deep_analyzer import MultiArticleDeepAnalyzer
 from scripts.token_tracker import TokenTracker
-from scripts.utils import APIKeyManager, RateLimiter, clean_text, truncate_text
+from scripts.utils import APIKeyManager, RateLimiter, clean_text, truncate_text, get_kst_now, KST
 from scripts.article_quality_evaluator import ArticleQualityEvaluator
 from scripts.image_generator import generate_news_image
 import openai
@@ -340,7 +340,7 @@ class SmartArticleGenerator:
         category = target_news.get("category", None)  # 카테고리 정보 추출
 
         # 토큰 추적을 위한 article_id 설정
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = get_kst_now().strftime("%Y%m%d_%H%M%S")
         self.current_article_id = f"article_{timestamp}"
         self.current_article_title = title
 
@@ -496,7 +496,7 @@ class SmartArticleGenerator:
                                 last_datetime = last_datetime.replace(tzinfo=timezone.utc)
 
                             # 현재 시간도 UTC로
-                            current_time = datetime.now(timezone.utc)
+                            current_time = datetime.now(KST)
                             time_diff = (current_time - last_datetime).total_seconds() / 3600
 
                             if time_diff < 1.0:  # 1시간 이내
@@ -841,7 +841,7 @@ class SmartArticleGenerator:
         ensure_output_dirs()
         output_dir = get_smart_articles_dir()
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = get_kst_now().strftime("%Y%m%d_%H%M%S")
 
         # 버전별 파일명
         version_filename = f"article_{article_id}_v{1}.html"
@@ -1027,7 +1027,7 @@ class SmartArticleGenerator:
         # 새로운 정보로 추가 분석
         new_analysis = {
             "new_developments": updates.get("new_developments", []),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": get_kst_now().isoformat(),
         }
 
         # 업데이트된 기사 생성
@@ -1086,7 +1086,7 @@ class SmartArticleGenerator:
         # 결과 저장
         ensure_output_dirs()
         output_dir = get_smart_articles_dir()
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = get_kst_now().strftime("%Y%m%d_%H%M%S")
 
         # 버전별 파일명
         version_filename = f"article_{new_article_id}_v{updated_data['version']}.html"
@@ -1125,7 +1125,7 @@ class SmartArticleGenerator:
         """업데이트된 기사 내용 생성"""
 
         # 현재 날짜
-        current_date = datetime.now().strftime("%Y년 %m월 %d일")
+        current_date = get_kst_now().strftime("%Y년 %m월 %d일")
 
         # 새로운 정보 요약 (출처 URL 포함)
         new_info_summary = []
@@ -1237,7 +1237,7 @@ class SmartArticleGenerator:
 
 {cached_data['generated_article']}
 
-현재 날짜: {datetime.now().strftime("%Y년 %m월 %d일")}
+현재 날짜: {get_kst_now().strftime("%Y년 %m월 %d일")}
 
 위 기사를 현재 시점에 맞게 새로고침해주세요.
 - 내용은 동일하게 유지
@@ -1268,7 +1268,7 @@ class SmartArticleGenerator:
                 "article": refreshed_content,
                 "topic_id": cached_data["topic_id"],
                 "version": cached_data["version"],
-                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "last_updated": get_kst_now().isoformat(),
             }
 
         except Exception as e:
@@ -1618,7 +1618,7 @@ JSON 형식으로 응답해주세요:
         """
 
         # 기본 템플릿
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current_time = get_kst_now().strftime("%Y-%m-%d %H:%M:%S")
         version_info = f"(버전 {article_data.get('version', 1)})" if is_update else ""
 
         # comprehensive_article에서 제목 추출
