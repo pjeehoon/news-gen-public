@@ -1,0 +1,132 @@
+name: Generate News Articles
+
+on:
+  # schedule:
+  #   # 한국시간 오전 6시 ~ 오후 8시: 20분 간격 (0분, 20분, 40분)
+  #   # UTC 21-23,0-11 = KST 6-20
+  #   - cron: '0,20,40 21-23 * * *'
+  #   - cron: '0,20,40 0-11 * * *'
+  #   # 한국시간 오후 8시 ~ 새벽 6시: 1시간 간격 (정각)
+  #   # UTC 11-21 = KST 20-6
+  #   - cron: '0 11-21 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without generating articles'
+        required: false
+        default: false
+        type: boolean
+
+# 동시 실행 방지 - 이전 실행이 끝날 때까지 대기
+concurrency:
+  group: news-generation
+  cancel-in-progress: false
+
+# Prevent running on forks
+jobs:
+  check-permission:
+    runs-on: ubuntu-latest
+    outputs:
+      is-owner: ${{ steps.check.outputs.is-owner }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ github.repository_owner }}" == "pjeehoon" ]]; then
+            echo "is-owner=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-owner=false" >> $GITHUB_OUTPUT
+          fi
+
+  generate-news:
+    needs: check-permission
+    if: needs.check-permission.outputs.is-owner == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Clone kona-news-site for existing articles
+      run: |
+        echo "Cloning kona-news-site to get existing articles..."
+        git clone https://github.com/pjeehoon/kona-news-site.git temp_site || true
+        if [ -d "temp_site/articles" ]; then
+          mkdir -p output/articles
+          cp -r temp_site/articles/* output/articles/ 2>/dev/null || true
+          echo "Copied $(ls output/articles/*.html 2>/dev/null | wc -l) existing articles"
+        fi
+        if [ -d "temp_site/smart_articles" ]; then
+          mkdir -p output/smart_articles
+          cp -r temp_site/smart_articles/* output/smart_articles/ 2>/dev/null || true
+          echo "Copied $(ls output/smart_articles/*.html 2>/dev/null | wc -l) existing smart articles"
+        fi
+        rm -rf temp_site
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install openai  # Ensure OpenAI is installed for tag generation
+    
+    - name: Check API Keys Configuration
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        echo "Checking API key configuration..."
+        if [[ -z "${{ secrets.CLAUDE_API_KEY }}" ]] && [[ -z "${{ secrets.OPENAI_API_KEY }}" ]]; then
+          echo "ERROR: No API keys configured!"
+          echo "Please add either CLAUDE_API_KEY or OPENAI_API_KEY to GitHub Secrets"
+          echo "Go to: Settings > Secrets and variables > Actions"
+          exit 1
+        else
+          echo "API keys are configured"
+        fi
+    
+    - name: Rebuild Topic Index (중복 체크를 위한 인덱스 재구성)
+      if: github.event.inputs.dry_run != 'true'
+      run: |
+        echo "Rebuilding topic index from existing articles..."
+        python scripts/rebuild_topic_index.py
+    
+    - name: Generate News Articles (트렌드 수집 + 기사 생성)
+      if: github.event.inputs.dry_run != 'true'
+      env:
+        CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        AI_MODEL: ${{ secrets.AI_MODEL || 'gpt4' }}
+        MAX_ARTICLES_PER_RUN: ${{ secrets.MAX_ARTICLES_PER_RUN || '5' }}
+        # External search API keys (optional)
+        YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY || '' }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
+        GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID || '' }}
+      run: |
+        echo "Starting news generation (trend collection + article generation)..."
+        python scripts/smart_article_generator.py --multiple
+    
+    - name: Deploy to Cloudflare Pages (인덱스 생성 + 어드민 페이지 + 배포)
+      if: github.event.inputs.dry_run != 'true'
+      env:
+        DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+      run: |
+        echo "Starting deployment process..."
+        python scripts/deploy_to_site.py
+    
+    - name: Upload artifacts
+      if: github.event.inputs.dry_run != 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-articles
+        path: |
+          output/
