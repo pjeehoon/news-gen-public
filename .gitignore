@@ -1,19 +1,39 @@
-*.log
-*.pyc
+# Python
 __pycache__/
+*.py[cod]
+*.pyc
+
+# Environment
 .env
 .env.*
-output/
+venv/
+.venv/
+
+# Generated content
+output/*
+!output/static/
 cache/
 logs/
+article_metadata/
+news_data/
+multi_article_analysis/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
 *.key
 *.pem
-error_*
-debug_*
-trace_*
-*.bak
+secrets/
+
+# Temporary files
 *.tmp
-*_backup*
-*_old*
-test_*
-.DS_Store
+*.bak
+*~
