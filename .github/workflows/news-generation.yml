@@ -111,6 +111,13 @@ jobs:
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
         GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID || '' }}
         RUNWARE_API_KEY: ${{ secrets.RUNWARE_API_KEY || '' }}
+        WIKIPEDIA_LANG: ${{ secrets.WIKIPEDIA_LANG || 'ko' }}
+        # Model and cost settings
+        DETAIL_MODEL: ${{ secrets.DETAIL_MODEL || 'gpt-4o-mini' }}
+        USD_TO_KRW_RATE: ${{ secrets.USD_TO_KRW_RATE || '1400' }}
+        # Image generation settings
+        IMAGE_GEN_PREFER_OPENAI: ${{ secrets.IMAGE_GEN_PREFER_OPENAI || 'false' }}
+        IMAGE_GEN_ENHANCE_PROMPTS: ${{ secrets.IMAGE_GEN_ENHANCE_PROMPTS || 'false' }}
       run: |
         echo "Starting news generation (trend collection + article generation)..."
         python scripts/smart_article_generator.py --multiple
