@@ -73,13 +73,33 @@ def rebuild_topic_index():
     cache_dir = Path("cache/articles")
     cache_dir.mkdir(parents=True, exist_ok=True)
     
-    topic_index = {}
+    # 기존 topic_index.json이 있으면 로드
+    topic_index_path = cache_dir / "topic_index.json"
+    if topic_index_path.exists():
+        try:
+            with open(topic_index_path, 'r', encoding='utf-8') as f:
+                topic_index = json.load(f)
+                logger.info(f"Loaded existing topic index with {len(topic_index)} entries")
+        except Exception as e:
+            logger.warning(f"Failed to load existing topic index: {e}")
+            topic_index = {}
+    else:
+        topic_index = {}
+    
     processed_count = 0
     
     # smart_articles 디렉토리의 HTML 파일들 처리
     smart_articles_dir = Path("output/smart_articles")
     if smart_articles_dir.exists():
-        for html_file in smart_articles_dir.glob("article_*.html"):
+        # 모든 HTML 파일 찾기 (article_*.html 패턴뿐만 아니라)
+        html_files = list(smart_articles_dir.glob("*.html"))
+        logger.info(f"Found {len(html_files)} HTML files in {smart_articles_dir}")
+        
+        for html_file in html_files:
+            # about.html, index.html 등은 제외
+            if html_file.name in ['index.html', 'about.html', 'admin.html']:
+                continue
+                
             metadata = extract_metadata_from_html(str(html_file))
             
             if metadata.get('topic_id'):

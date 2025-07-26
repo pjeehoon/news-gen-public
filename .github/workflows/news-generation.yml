@@ -54,16 +54,28 @@ jobs:
       run: |
         echo "Cloning kona-news-site to get existing articles..."
         git clone https://github.com/pjeehoon/kona-news-site.git temp_site || true
+        
+        # Copy existing articles
         if [ -d "temp_site/articles" ]; then
           mkdir -p output/articles
           cp -r temp_site/articles/* output/articles/ 2>/dev/null || true
           echo "Copied $(ls output/articles/*.html 2>/dev/null | wc -l) existing articles"
         fi
+        
+        # Copy smart articles
         if [ -d "temp_site/smart_articles" ]; then
           mkdir -p output/smart_articles
           cp -r temp_site/smart_articles/* output/smart_articles/ 2>/dev/null || true
           echo "Copied $(ls output/smart_articles/*.html 2>/dev/null | wc -l) existing smart articles"
         fi
+        
+        # Copy cache files if they exist
+        if [ -d "temp_site/cache" ]; then
+          mkdir -p cache
+          cp -r temp_site/cache/* cache/ 2>/dev/null || true
+          echo "Copied cache files"
+        fi
+        
         rm -rf temp_site
     
     - name: Cache pip dependencies
@@ -97,6 +109,12 @@ jobs:
       if: github.event.inputs.dry_run != 'true'
       run: |
         echo "Rebuilding topic index from existing articles..."
+        echo "Checking output directory structure:"
+        ls -la output/ || echo "output/ directory not found"
+        echo "Checking smart_articles directory:"
+        ls -la output/smart_articles/ || echo "output/smart_articles/ directory not found"
+        echo "Counting HTML files:"
+        find output -name "*.html" -type f | wc -l || echo "0"
         python scripts/rebuild_topic_index.py
     
     - name: Generate News Articles (트렌드 수집 + 기사 생성)
