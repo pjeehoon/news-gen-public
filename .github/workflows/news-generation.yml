@@ -110,6 +110,7 @@ jobs:
         YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY || '' }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
         GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID || '' }}
+        RUNWARE_API_KEY: ${{ secrets.RUNWARE_API_KEY || '' }}
       run: |
         echo "Starting news generation (trend collection + article generation)..."
         python scripts/smart_article_generator.py --multiple
