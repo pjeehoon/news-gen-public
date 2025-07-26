@@ -76,6 +76,13 @@ jobs:
           echo "Copied cache files"
         fi
         
+        # Copy topic_index.json from root if it exists
+        if [ -f "temp_site/topic_index.json" ]; then
+          mkdir -p cache/articles
+          cp temp_site/topic_index.json cache/articles/topic_index.json
+          echo "Copied topic_index.json to cache/articles/"
+        fi
+        
         rm -rf temp_site
     
     - name: Cache pip dependencies
