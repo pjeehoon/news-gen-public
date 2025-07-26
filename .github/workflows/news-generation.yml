@@ -104,8 +104,8 @@ jobs:
       env:
         CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        AI_MODEL: ${{ secrets.AI_MODEL || 'gpt4' }}
-        MAX_ARTICLES_PER_RUN: ${{ secrets.MAX_ARTICLES_PER_RUN || '5' }}
+        AI_MODEL: ${{ secrets.AI_MODEL || 'openai' }}
+        MAX_ARTICLES_PER_RUN: ${{ secrets.MAX_ARTICLES_PER_RUN || '10' }}
         # External search API keys (optional)
         YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY || '' }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || '' }}
@@ -113,7 +113,7 @@ jobs:
         RUNWARE_API_KEY: ${{ secrets.RUNWARE_API_KEY || '' }}
         WIKIPEDIA_LANG: ${{ secrets.WIKIPEDIA_LANG || 'ko' }}
         # Model and cost settings
-        DETAIL_MODEL: ${{ secrets.DETAIL_MODEL || 'gpt-4o-mini' }}
+        DETAIL_MODEL: ${{ secrets.DETAIL_MODEL || 'gpt-4.1-nano' }}
         USD_TO_KRW_RATE: ${{ secrets.USD_TO_KRW_RATE || '1400' }}
         # Image generation settings
         IMAGE_GEN_PREFER_OPENAI: ${{ secrets.IMAGE_GEN_PREFER_OPENAI || 'false' }}
