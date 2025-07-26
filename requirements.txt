@@ -1,0 +1,39 @@
+# Core dependencies
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+
+# AI API clients
+openai>=1.12.0
+runware>=1.0.0
+pydantic>=2.0.0
+
+# Template engine
+Jinja2>=3.1.2
+
+# Markdown processor
+markdown>=3.5.0
+
+# Date and time handling
+python-dateutil>=2.8.2
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Korean NLP - Removed (replaced with ChatGPT API)
+
+# Multi-source collection
+youtube-transcript-api>=0.6.1
+google-api-python-client>=2.100.0
+yt-dlp>=2024.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Code formatting
+black>=23.7.0
+
+# Development tools (optional)
+# ipython>=8.14.0  # For interactive development
+# jupyter>=1.0.0   # For notebook-based experimentation
